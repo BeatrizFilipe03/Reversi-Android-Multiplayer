@@ -12,7 +12,7 @@ class AboutActivity : ComponentActivity() {
 
     private val contactUsIntent = Intent(Intent.ACTION_SENDTO).apply {
         data = Uri.parse("mailto:")
-        putExtra(Intent.EXTRA_EMAIL, arrayOf("A49751@alunos.isel.pt", "A49988@alunos.isel.pt"))
+        putExtra(Intent.EXTRA_EMAIL, arrayOf(R.string.author_1_email,R.string.author_2_email))
         putExtra(Intent.EXTRA_SUBJECT, "Contact Authors")
     }
 
@@ -33,7 +33,7 @@ class AboutActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
-        Log.v(TAG, "AboutActivity..onStop")
+        Log.v(TAG, "AboutActivity.onStop")
     }
 
     override fun onDestroy() {

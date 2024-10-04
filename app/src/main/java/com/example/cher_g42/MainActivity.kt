@@ -45,3 +45,11 @@ fun GreetingPreview() {
         Greeting("Android")
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun MainPreview() {
+    CheRg42Theme {
+        CheRScreen()
+    }
+}
