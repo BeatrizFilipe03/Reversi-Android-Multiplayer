@@ -10,17 +10,12 @@ import com.example.cher_g42.ui.theme.CheRg42Theme
 
 class AboutActivity : ComponentActivity() {
 
-    private val contactUsIntent = Intent(Intent.ACTION_SENDTO).apply {
-        data = Uri.parse("mailto:")
-        putExtra(Intent.EXTRA_EMAIL, arrayOf(R.string.author_1_email,R.string.author_2_email))
-        putExtra(Intent.EXTRA_SUBJECT, "Contact Authors")
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.v(TAG, "AboutActivity.onCreate")
+
         setContent {
-            CheRg42Theme() {
+            CheRg42Theme {
                 AboutScreen(onNavigateBack = { finish() }, onContactUs = {handleContactUs()})
             }
         }
@@ -42,8 +37,11 @@ class AboutActivity : ComponentActivity() {
     }
 
     private fun handleContactUs() {
-        val chooser = Intent.createChooser(contactUsIntent, "Choose Email App")
-        startActivity(chooser)
+        val intent = Intent(Intent.ACTION_SENDTO)
+        intent.setData(Uri.parse("mailto:"))
+        intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.author_1_email), getString(R.string.author_2_email)))
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Contact Authors")
+        startActivity(Intent.createChooser(intent, "Send email..."))
     }
 
 }

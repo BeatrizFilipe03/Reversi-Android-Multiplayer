@@ -25,6 +25,8 @@
         </activity>
 
         <activity android:name=".AboutActivity" />
+        <activity android:name=".FavoritesActivity" />
+        <activity android:name=".PairingActivity" />
     </application>
 
 </manifest>

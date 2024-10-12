@@ -1,100 +1,206 @@
 package com.example.cher_g42
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.cher_g42.ui.theme.CheRg42Theme
-import kotlinx.coroutines.delay
 
 /**
  * The screen implementation, which hosts the screen's state machine.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CheRScreen(onAboutNavigate: () -> Unit = {}) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.app_name)) },
-                actions = {
-                    IconButton(onClick = { onAboutNavigate() }) {
-                        Icon(Icons.Outlined.Info, contentDescription = "")
-                    }
-                }
-            )
-        },
+fun CheRScreen(
+    onAboutNavigate: () -> Unit = {},
+    onFavoritesNavigate: () -> Unit = {},
+    onPairingNavigate: () -> Unit = {}
+) {
+    // Box to allow layering of elements
+    Box(
         modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
-        var state: CheRScreenState by rememberSaveable(saver = CheRScreenState.Saver) {
-            mutableStateOf(CheRScreenState.Idle)
-        }
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize()
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                // Green section
+                GreenSection(modifier = Modifier.weight(0.55f))
 
-        val currentState = state
-        LaunchedEffect(currentState) {
-            if (currentState is CheRScreenState.Rolling) {
-                //delay(timeMillis = ROLLING_TIME_MS)
-                state = CheRScreenState.Idle
+                // White section
+                WhiteSection(modifier = Modifier.weight(0.45f), onAboutNavigate = onAboutNavigate, onFavoritesNavigate = onFavoritesNavigate, onPairingNavigate = onPairingNavigate)
             }
         }
 
-        when (currentState) {
-            is CheRScreenState.Idle -> CheRIdleView(
-                state = currentState,
-                onDiceRollIntent = { state = CheRScreenState.Rolling },
-                modifier = Modifier.padding(innerPadding)
+        // Clouds positioned at the bottom corners
+        Clouds(modifier = Modifier.fillMaxSize())
+    }
+}
+
+@Composable
+fun GreenSection(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(bottomStart = 25.dp, bottomEnd = 25.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Game title
+            Text(
+                text = stringResource(R.string.game_title),
+                style = MaterialTheme.typography.titleLarge.copy(color = MaterialTheme.colorScheme.onPrimary),
             )
 
-            else -> CheRRollingView(modifier = Modifier.padding(innerPadding))
+            Spacer(modifier = Modifier.height(25.dp))
+
+            // Game image
+            Image(
+                painter = painterResource(id = R.drawable.board_homescreen),
+                contentDescription = "Game Board",
+                modifier = Modifier.size(280.dp)
+            )
         }
     }
 }
 
-/**
- * The screen's possible states.
- */
-sealed interface CheRScreenState {
-    data object Idle : CheRScreenState
-    data object Rolling : CheRScreenState
+@Composable
+fun WhiteSection(modifier: Modifier = Modifier, onAboutNavigate: () -> Unit, onFavoritesNavigate: () -> Unit, onPairingNavigate: () -> Unit) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth(),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(modifier = Modifier.height(70.dp))
 
-    companion object {
-        val Saver = Saver<MutableState<CheRScreenState>, List<Int>>(
-            save = { toSave ->
-                toSave.value.let { state ->
-                    if (state is Idle) listOf(
-
+            // Play button -> Pairing Screen
+            Button(
+                onClick = { onPairingNavigate() },
+                modifier = Modifier
+                    .fillMaxWidth(0.65f)
+                    .height(60.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.controller_filled),
+                        contentDescription = null,
+                        modifier = Modifier.size(35.dp)
                     )
-                    else emptyList()
+
+                    Spacer(modifier = Modifier.width(50.dp))
+
+                    Text(
+                        text = stringResource(R.string.play),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                 }
-            },
-            restore = { saved ->
-                if (saved.isNotEmpty())
-                    mutableStateOf(Idle)
-                else
-                    mutableStateOf(Rolling)
             }
+
+            Spacer(modifier = Modifier.height(25.dp))
+
+            // Favorites button -> Favorites Screen
+            OutlinedButton(
+                onClick = { onFavoritesNavigate() },
+                modifier = Modifier
+                    .fillMaxWidth(0.65f)
+                    .height(60.dp),
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Text(
+                        text = stringResource(R.string.fav_games),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+
+                    Spacer(modifier = Modifier.width(20.dp))
+
+                    Icon(
+                        painter = painterResource(id = R.drawable.star_outlined),
+                        contentDescription = null,
+                        modifier = Modifier.size(35.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(25.dp))
+
+            // Message Button -> About Screen
+            IconButton (
+                onClick = { onAboutNavigate() },
+                modifier = Modifier.size(50.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.email_icon),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun Clouds(modifier: Modifier = Modifier) {
+    Box(modifier = modifier) {
+        Image(
+            painter = painterResource(id = R.drawable.cloud1),
+            contentDescription = "Clouds",
+            modifier = Modifier.align(Alignment.BottomStart)
+        )
+
+        Image(
+            painter = painterResource(id = R.drawable.cloud2),
+            contentDescription = "Clouds",
+            modifier = Modifier.align(Alignment.BottomEnd)
         )
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+
+@Preview(showBackground = true)
 @Composable
 fun CheRScreenPreview() {
     CheRg42Theme {
