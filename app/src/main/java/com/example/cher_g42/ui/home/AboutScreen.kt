@@ -1,4 +1,4 @@
-package com.example.cher_g42
+package com.example.cher_g42.ui.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,7 +19,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,48 +27,40 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.cher_g42.R
 import com.example.cher_g42.ui.theme.CheRg42Theme
 
 @Composable
 fun AboutScreen(onNavigateBack: () -> Unit = {}, onContactUs: () -> Unit = {}) {
-    Box(
-        modifier = Modifier.fillMaxSize()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
     ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize()
-        ) { innerPadding ->
-            Column(
+        Box(modifier = Modifier.weight(0.45f)) {
+            // Green section
+            GreenSectionAbout(modifier = Modifier.fillMaxSize())
+
+            // Back button
+            Button(
+                onClick = { onNavigateBack() },
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+                    .align(Alignment.TopStart)
+                    .size(65.dp)
+                    .padding(14.dp),
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.background)
             ) {
-                Box(modifier = Modifier.weight(0.45f)) {
-                    // Green section
-                    GreenSectionAbout(modifier = Modifier.fillMaxSize())
-
-                    // Back button positioned on top of the green section
-                    Button(
-                        onClick = { onNavigateBack() },
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .size(65.dp)
-                            .padding(14.dp),
-                        contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.background)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack, // Left-pointing arrow icon
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-
-                // White section
-                WhiteSectionAbout(modifier = Modifier.weight(0.55f), onContactUs = onContactUs)
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, // Left-pointing arrow icon
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
+
+        // White section
+        WhiteSectionAbout(modifier = Modifier.weight(0.55f), onContactUs = onContactUs)
     }
 }
 
@@ -178,7 +169,7 @@ fun WhiteSectionAbout(modifier: Modifier = Modifier, onContactUs: () -> Unit) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun AboutScreenPreview() {
-    CheRg42Theme() {
+    CheRg42Theme {
         AboutScreen()
     }
 }

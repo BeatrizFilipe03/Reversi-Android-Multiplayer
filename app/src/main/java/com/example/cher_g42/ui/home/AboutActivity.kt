@@ -1,4 +1,4 @@
-package com.example.cher_g42
+package com.example.cher_g42.ui.home
 
 import android.content.Intent
 import android.net.Uri
@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.example.cher_g42.R
+import com.example.cher_g42.ui.TAG
 import com.example.cher_g42.ui.theme.CheRg42Theme
 
 class AboutActivity : ComponentActivity() {

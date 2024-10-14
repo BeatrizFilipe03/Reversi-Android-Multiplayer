@@ -1,35 +1,36 @@
-package com.example.cher_g42
+package com.example.cher_g42.ui.matchmaking
 
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.example.cher_g42.ui.TAG
 import com.example.cher_g42.ui.theme.CheRg42Theme
 
-class FavoritesActivity : ComponentActivity() {
+class MatchmakingActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.v(TAG, "FavoritesActivity.onCreate")
+        Log.v(TAG, "MatchmakingActivity.onCreate")
         setContent {
-            CheRg42Theme() {
-                FavoritesScreen(onNavigateBack = { finish() })
+            CheRg42Theme {
+                MatchmakingScreen(onNavigateBack = { finish() })
             }
         }
     }
 
     override fun onStart() {
         super.onStart()
-        Log.v(TAG, "FavoritesActivity.onStart")
+        Log.v(TAG, "MatchmakingActivity.onStart")
     }
 
     override fun onStop() {
         super.onStop()
-        Log.v(TAG, "FavoritesActivity..onStop")
+        Log.v(TAG, "MatchmakingActivity..onStop")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.v(TAG, "FavoritesActivity.onDestroy")
+        Log.v(TAG, "MatchmakingActivity.onDestroy")
     }
 }

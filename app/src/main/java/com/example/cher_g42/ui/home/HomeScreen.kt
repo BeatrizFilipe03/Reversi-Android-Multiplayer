@@ -1,4 +1,4 @@
-package com.example.cher_g42
+package com.example.cher_g42.ui.home
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,7 +19,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -29,40 +27,31 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.cher_g42.R
 import com.example.cher_g42.ui.theme.CheRg42Theme
 
 /**
  * The screen implementation, which hosts the screen's state machine.
  */
 @Composable
-fun CheRScreen(
+fun HomeScreen(
     onAboutNavigate: () -> Unit = {},
     onFavoritesNavigate: () -> Unit = {},
-    onPairingNavigate: () -> Unit = {}
+    onMatchmakingNavigate: () -> Unit = {}
 ) {
-    // Box to allow layering of elements
-    Box(
-        modifier = Modifier.fillMaxSize()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
     ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize()
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-            ) {
-                // Green section
-                GreenSection(modifier = Modifier.weight(0.55f))
+        // Green section
+        GreenSection(modifier = Modifier.weight(0.55f))
 
-                // White section
-                WhiteSection(modifier = Modifier.weight(0.45f), onAboutNavigate = onAboutNavigate, onFavoritesNavigate = onFavoritesNavigate, onPairingNavigate = onPairingNavigate)
-            }
-        }
-
-        // Clouds positioned at the bottom corners
-        Clouds(modifier = Modifier.fillMaxSize())
+        // White section
+        WhiteSection(modifier = Modifier.weight(0.45f), onAboutNavigate = onAboutNavigate, onFavoritesNavigate = onFavoritesNavigate, onMatchmakingNavigate = onMatchmakingNavigate)
     }
+
+    // Clouds positioned at the bottom corners
+    Clouds(modifier = Modifier.fillMaxSize())
 }
 
 @Composable
@@ -96,7 +85,7 @@ fun GreenSection(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun WhiteSection(modifier: Modifier = Modifier, onAboutNavigate: () -> Unit, onFavoritesNavigate: () -> Unit, onPairingNavigate: () -> Unit) {
+fun WhiteSection(modifier: Modifier = Modifier, onAboutNavigate: () -> Unit, onFavoritesNavigate: () -> Unit, onMatchmakingNavigate: () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxWidth(),
@@ -107,9 +96,9 @@ fun WhiteSection(modifier: Modifier = Modifier, onAboutNavigate: () -> Unit, onF
         ) {
             Spacer(modifier = Modifier.height(70.dp))
 
-            // Play button -> Pairing Screen
+            // Play button -> Matchmaking Screen
             Button(
-                onClick = { onPairingNavigate() },
+                onClick = { onMatchmakingNavigate() },
                 modifier = Modifier
                     .fillMaxWidth(0.65f)
                     .height(60.dp)
@@ -202,8 +191,8 @@ fun Clouds(modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun CheRScreenPreview() {
+fun HomeScreenPreview() {
     CheRg42Theme {
-        CheRScreen()
+        HomeScreen()
     }
 }

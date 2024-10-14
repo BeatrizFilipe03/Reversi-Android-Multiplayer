@@ -1,4 +1,4 @@
-package com.example.cher_g42
+package com.example.cher_g42.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,6 +7,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.cher_g42.ui.favorites.FavoritesActivity
+import com.example.cher_g42.ui.home.AboutActivity
+import com.example.cher_g42.ui.home.HomeScreen
+import com.example.cher_g42.ui.matchmaking.MatchmakingActivity
 import com.example.cher_g42.ui.theme.CheRg42Theme
 
 const val TAG = "CheR"
@@ -19,10 +23,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             CheRg42Theme {
-                CheRScreen(
+                HomeScreen(
                     onAboutNavigate = { navigation.navigateToAbout() },
                     onFavoritesNavigate = { navigation.navigateToFavorites() },
-                    onPairingNavigate = { navigation.navigateToPairing() }
+                    onMatchmakingNavigate = { navigation.navigateToMatchmaking() }
                 )
             }
         }
@@ -38,8 +42,8 @@ class Navigation(private val activity: ComponentActivity) {
         activity.startActivity(Intent(activity, FavoritesActivity::class.java))
     }
 
-    fun navigateToPairing() {
-        activity.startActivity(Intent(activity, PairingActivity::class.java))
+    fun navigateToMatchmaking() {
+        activity.startActivity(Intent(activity, MatchmakingActivity::class.java))
     }
 }
 
@@ -47,6 +51,6 @@ class Navigation(private val activity: ComponentActivity) {
 @Composable
 fun MainPreview() {
     CheRg42Theme {
-        CheRScreen()
+        HomeScreen()
     }
 }

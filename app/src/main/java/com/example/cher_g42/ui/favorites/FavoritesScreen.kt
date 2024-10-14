@@ -1,4 +1,4 @@
-package com.example.cher_g42
+package com.example.cher_g42.ui.favorites
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.example.cher_g42.ui.theme.CheRg42Theme
 
 @Composable
-fun PairingScreen(onNavigateBack: () -> Unit = {}) {
+fun FavoritesScreen(onNavigateBack: () -> Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -26,8 +26,8 @@ fun PairingScreen(onNavigateBack: () -> Unit = {}) {
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun PairingScreenPreview() {
-    CheRg42Theme() {
+fun FavoritesScreenPreview() {
+    CheRg42Theme {
         FavoritesScreen()
     }
 }

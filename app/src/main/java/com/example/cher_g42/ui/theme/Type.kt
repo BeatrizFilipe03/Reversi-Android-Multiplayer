@@ -40,4 +40,8 @@ val Typography = Typography(
         fontFamily = regularFont,
         fontSize = 20.sp
     ),
+    labelSmall = TextStyle(
+        fontFamily = regularFont,
+        fontSize = 16.sp
+    )
 )
