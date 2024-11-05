@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "217648326154",
+    "project_id": "chelas-reversi-g42",
+    "storage_bucket": "chelas-reversi-g42.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:217648326154:android:7f47ee89f1902679c721f3",
+        "android_client_info": {
+          "package_name": "com.example.cher_g42"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjBuTdxJjcX6TnuoFSQeCLtvKlfOg73rE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
