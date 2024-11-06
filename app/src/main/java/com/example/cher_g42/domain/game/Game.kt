@@ -9,13 +9,13 @@ data class Game(
     val currentPlayer: PieceColor
 ) {
 
-    fun play(move: Piece): Game {
-        // TODO - Implement the play function
-        return this
+    fun play(position: Position): Game { //not finish
+        return this.copy(board = board.play(position, currentPlayer), currentPlayer = currentPlayer.opposite())
     }
 
     private fun checkWin(): Boolean {
-        // TODO - Implement the checkWin function
+        if(board.isBoardFull()) return true
+        if(board.checkAvailableMoves(currentPlayer) == emptyList<Position>()) return true
         return false
     }
 }
