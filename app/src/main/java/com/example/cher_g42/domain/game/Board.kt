@@ -4,7 +4,7 @@ import java.lang.IllegalArgumentException
 
 const val BOARD_SIZE = 8
 
-data class Board(val cells: List<List<Cell>>) {//não gostei porque para ver os movimentos diponiveis tenho de percorrer todas as peças só para descobrir se a posição ao lado está vazia
+data class Board(val cells: List<List<Cell>>) {
    fun checkAvailableMoves(currentPlayer: PieceColor): List<Position> {
        var row = 0
        var col = 0
@@ -67,4 +67,35 @@ data class Board(val cells: List<List<Cell>>) {//não gostei porque para ver os 
        return Board(newCells)
 
    }
+    fun score(): scoreBW {
+        var whiteScore = 0
+        var blackScore = 0
+        for (row in cells) {
+            for (cell in row) {
+                if (cell.color == PieceColor.WHITE) whiteScore++
+                if (cell.color == PieceColor.BLACK) blackScore++
+            }
+        }
+        return scoreBW(blackScore, whiteScore)
+    }
+}
+
+fun createBoard():Board{
+    val cells = mutableListOf<List<Cell>>()
+    for(r in 1 .. BOARD_SIZE){
+        val row = mutableListOf<Cell>()
+        for(c in 1 .. BOARD_SIZE){
+            if((r == BOARD_SIZE/2 || r == BOARD_SIZE/2 +1) && c == BOARD_SIZE/2 || c == BOARD_SIZE/2 +1){
+                if(c == BOARD_SIZE/2){
+                    if(r == BOARD_SIZE/2) row.add(Cell(Position(c.toColumn(),Row(r)),PieceColor.WHITE))
+                    else row.add(Cell(Position(c.toColumn(),Row(r)),PieceColor.BLACK))
+                }else {
+                    if(r == BOARD_SIZE/2) row.add(Cell(Position(c.toColumn(),Row(r)),PieceColor.BLACK))
+                    else row.add(Cell(Position(c.toColumn(),Row(r)),PieceColor.WHITE))
+                }
+            }else row.add(Cell(Position(c.toColumn(),Row(r)),null))
+        }
+        cells.add(row)
+    }
+    return Board(cells)
 }
