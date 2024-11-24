@@ -40,17 +40,60 @@ import com.example.cher_g42.ui.theme.CheRg42Theme
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.painterResource
 import com.example.cher_g42.R
+import com.example.cher_g42.domain.game.PlayerInfo
 
 @Composable
-fun MatchmakingScreen(onNavigateBack: () -> Unit = {}) {
-    EnterNameDialog(onNameEntered = { /*Preview*/ }, onNavigateBack = onNavigateBack)
+fun MatchmakingScreen(viewModel: MatchmakingViewModel, onNavigateBack: () -> Unit = {}) {
+    val state by viewModel.state.collectAsState()
+
+    when (state) {
+        is MatchmakingState.NotInLobby -> EnterNameDialog(
+            onNameEntered = { name ->
+                viewModel.enterLobby(name)
+            },
+            onNavigateBack = onNavigateBack
+        )
+        is MatchmakingState.InLobby -> LobbyScreen(
+            username = viewModel.currUser?.info?.name ?: "",
+            players = viewModel.players.collectAsState().value,
+            onInvite = { invitedPlayer ->
+                viewModel.issueChallenge(invitedPlayer)
+            },
+            onNavigateBack = onNavigateBack
+        )
+        is MatchmakingState.InChallenge -> {
+            val stateChallenge = state as MatchmakingState.InChallenge
+            val challenger = stateChallenge.challenger
+            val challenged = stateChallenge.challenged
+            val challengeId = stateChallenge.id
+
+            if (viewModel.currUser == challenger) {
+                // Make view to show that the challenge is pending
+                Text("Waiting for ${challenged.info.name} to accept the challenge")
+            } else {
+                GameInviteDialog(
+                    username = challenger.info.name,
+                    onAccept = {
+                        viewModel.acceptChallenge(challengeId)
+                    },
+                    onDecline = {
+                        viewModel.rejectChallenge(challengeId)
+                    }
+                )
+            }
+        }
+        is MatchmakingState.InGame -> {
+            // Go to game screen
+            Text("In Game")
+        }
+    }
 }
 
 
 // Screen that appears first to request user name
 @Composable
 fun EnterNameDialog(
-    onNameEntered: () -> Unit,
+    onNameEntered: (String) -> Unit,
     onNavigateBack: () -> Unit = {}
 ) {
     var playerName by remember { mutableStateOf("") }
@@ -130,7 +173,7 @@ fun EnterNameDialog(
                 Spacer(modifier = Modifier.height(30.dp))
 
                 Button(
-                    onClick = { onNameEntered() },
+                    onClick = { onNameEntered(playerName) },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.background)
                 ) {
                     Text(
@@ -218,8 +261,8 @@ fun GameInviteDialog(
 @Composable
 fun LobbyScreen(
     username: String,
-    players: List<String>,
-    onInvite: (String) -> Unit,
+    players: List<PlayerInfo>,
+    onInvite: (PlayerInfo) -> Unit,
     onNavigateBack: () -> Unit = {}
 ) {
         // Back button
@@ -261,7 +304,7 @@ fun LobbyScreen(
                         MaterialTheme.colorScheme.secondary
                     }
 
-                    PlayerListItem(playerName = player, onInvite = { onInvite(player) }, cardColor = cardColor)
+                    PlayerListItem(playerName = player.info.name, onInvite = { onInvite(player) }, cardColor = cardColor)
                 }
             }
 
@@ -282,7 +325,7 @@ fun LobbyScreen(
 }
 
 @Composable
-fun PlayerListItem(playerName: String, onInvite: () -> Unit, cardColor: Color) {
+fun PlayerListItem(playerName: String, onInvite: (String) -> Unit, cardColor: Color) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -303,7 +346,7 @@ fun PlayerListItem(playerName: String, onInvite: () -> Unit, cardColor: Color) {
             )
 
             IconButton(
-                onClick = { onInvite() },
+                onClick = { onInvite(playerName) },
                 modifier = Modifier.padding(horizontal = 5.dp)
             ) {
                 Icon(
@@ -338,6 +381,7 @@ fun GameInviteDialogPreview() {
     }
 }
 
+/*
 @Preview(showBackground = true)
 @Composable
 fun LobbyScreenPreview() {
@@ -355,12 +399,12 @@ fun LobbyScreenPreview() {
         )
     }
 }
-
+*/
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun MatchmakingScreenPreview() {
     CheRg42Theme {
-        MatchmakingScreen()
+        //MatchmakingScreen()
     }
 }
