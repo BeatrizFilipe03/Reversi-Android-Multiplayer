@@ -3,20 +3,22 @@ package com.example.cher_g42.ui.matchmaking
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.cher_g42.domain.game.LobbyService
+import com.example.cher_g42.domain.game.PieceColor
+import com.example.cher_g42.domain.matchmaking.LobbyService
 import com.example.cher_g42.domain.game.PlayerInfo
 import com.example.cher_g42.domain.player.UserInfo
 import com.example.cher_g42.services.ChallengeState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 sealed class MatchmakingState {
     object NotInLobby : MatchmakingState()
     object InLobby : MatchmakingState()
     data class InChallenge(val challenger: PlayerInfo, val challenged: PlayerInfo, val id: String) : MatchmakingState()
-    object InGame : MatchmakingState()
-    // Add states for challenges
+    data class InChooseColor(val challenge: String) : MatchmakingState()
+    data class InGame(val challengeId: String, val color: PieceColor, val playerId: UUID, val playerName: String) : MatchmakingState()
 }
 
 class MatchmakingViewModel(
@@ -42,6 +44,10 @@ class MatchmakingViewModel(
                         getPlayers()
                         listenToChallenges()
                     }
+                    is MatchmakingState.InChooseColor -> {
+                        val challengeId = state.challenge
+                        listenToColorChange(challengeId)
+                    }
                     else -> {
                         // Optional: handle other state transitions
                     }
@@ -61,12 +67,10 @@ class MatchmakingViewModel(
     }
 
     fun leaveLobby() {
-        check(currUser != null && _state.value is MatchmakingState.InLobby) { "The player is not inside the lobby" }
         viewModelScope.launch {
             currUser?.let {
                 service.leaveLobby(it)
                 currUser = null
-                _state.value = MatchmakingState.NotInLobby
             }
         }
     }
@@ -90,7 +94,7 @@ class MatchmakingViewModel(
 
                 service.listenToChallengeState(challengeId) { state ->
                     if (state == ChallengeState.ACCEPTED) {
-                        _state.value = MatchmakingState.InGame
+                        _state.value = MatchmakingState.InChooseColor(challengeId)
                         service.deleteChallenge(challengeId)
                     } else if (state == ChallengeState.REJECTED) {
                         _state.value = MatchmakingState.InLobby
@@ -117,7 +121,7 @@ class MatchmakingViewModel(
         check(currUser != null && _state.value is MatchmakingState.InChallenge) { "The player is not in a challenge" }
         viewModelScope.launch {
             service.acceptChallenge(challengeId)
-            _state.value = MatchmakingState.InGame
+            _state.value = MatchmakingState.InChooseColor(challengeId)
         }
     }
 
@@ -126,6 +130,22 @@ class MatchmakingViewModel(
         viewModelScope.launch {
             service.rejectChallenge(challengeId)
             _state.value = MatchmakingState.InLobby
+        }
+    }
+
+    fun choosePieceColor(challengeId: String, color: PieceColor) {
+        check(currUser != null ) { "The player is not in a color choosing state" }
+        viewModelScope.launch {
+            _state.value = MatchmakingState.InGame(challengeId, color, currUser!!.id, currUser!!.info.name)
+            service.updatePieceColor(challengeId, color)
+        }
+    }
+
+    private fun listenToColorChange(challengeId: String) {
+        // needs to be opposite color
+        service.listenToColorChange(challengeId) { color ->
+            val oppositeColor = color.opposite()
+            _state.value = MatchmakingState.InGame(challengeId, oppositeColor, currUser!!.id, currUser!!.info.name)
         }
     }
 

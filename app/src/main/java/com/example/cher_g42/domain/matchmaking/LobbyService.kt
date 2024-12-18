@@ -1,5 +1,7 @@
-package com.example.cher_g42.domain.game
+package com.example.cher_g42.domain.matchmaking
 
+import com.example.cher_g42.domain.game.PieceColor
+import com.example.cher_g42.domain.game.PlayerInfo
 import com.example.cher_g42.services.ChallengeState
 
 interface LobbyService {
@@ -28,4 +30,8 @@ interface LobbyService {
     fun listenToChallengeState(challengeId: String, onStateChange: (ChallengeState) -> Unit)
 
     fun deleteChallenge(challengeId: String)
+
+    fun updatePieceColor(challengeId: String, color: PieceColor)
+
+    fun listenToColorChange(challengeId: String, onColorChange: (PieceColor) -> Unit)
 }

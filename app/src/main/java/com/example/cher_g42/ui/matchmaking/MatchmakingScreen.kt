@@ -1,5 +1,6 @@
 package com.example.cher_g42.ui.matchmaking
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -38,12 +40,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.cher_g42.ui.theme.CheRg42Theme
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import com.example.cher_g42.R
+import com.example.cher_g42.domain.game.PieceColor
 import com.example.cher_g42.domain.game.PlayerInfo
+import java.util.UUID
 
 @Composable
-fun MatchmakingScreen(viewModel: MatchmakingViewModel, onNavigateBack: () -> Unit = {}) {
+fun MatchmakingScreen(viewModel: MatchmakingViewModel, onNavigateBack: () -> Unit = {}, onNavigateToGame: (String, PieceColor, UUID, String) -> Unit) {
     val state by viewModel.state.collectAsState()
 
     when (state) {
@@ -82,9 +87,21 @@ fun MatchmakingScreen(viewModel: MatchmakingViewModel, onNavigateBack: () -> Uni
                 )
             }
         }
+        is MatchmakingState.InChooseColor -> {
+            val stateChooseColor = state as MatchmakingState.InChooseColor
+            val challengeId = stateChooseColor.challenge
+            ChoosePieceDialog { pieceColor ->
+                viewModel.choosePieceColor(challengeId, pieceColor)
+            }
+        }
         is MatchmakingState.InGame -> {
             // Go to game screen
-            Text("In Game")
+            val stateChallenge = state as MatchmakingState.InGame
+            val challengeId = stateChallenge.challengeId
+            val pieceColor = stateChallenge.color
+            val playerId = stateChallenge.playerId
+            val playerName = stateChallenge.playerName
+            onNavigateToGame(challengeId, pieceColor, playerId, playerName)
         }
     }
 }
@@ -359,47 +376,95 @@ fun PlayerListItem(playerName: String, onInvite: (String) -> Unit, cardColor: Co
 }
 
 
-@Preview(showBackground = true)
+// Screen that appears when two users enter a game, to choose piece color
 @Composable
-fun EnterNameDialogPreview() {
-    CheRg42Theme {
-        EnterNameDialog(
-            onNameEntered = { /* Preview only, no action needed */ }
-        )
+fun ChoosePieceDialog(
+    onChoice: (PieceColor) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0x80000000))
+    ) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(80.dp))
+                .padding(16.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Choose your piece color:",
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.padding(bottom = 20.dp, top = 15.dp)
+                )
+
+                // Buttons to choose piece color
+                Row(
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // White piece button
+                    Button(
+                        onClick = { onChoice(PieceColor.WHITE) },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Canvas(
+                                modifier = Modifier.size(20.dp)
+                            ) {
+                                drawCircle(color = Color.White)
+                                drawCircle(
+                                    color = Color.Gray,
+                                    style = Stroke(width = 2f)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "White",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+
+                    // Black piece button
+                    Button(
+                        onClick = { onChoice(PieceColor.BLACK) },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Canvas(
+                                modifier = Modifier.size(20.dp)
+                            ) {
+                                drawCircle(color = Color.Black)
+                                drawCircle(
+                                    color = Color.Gray,
+                                    style = Stroke(width = 2f)
+                                ) // Optional border
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Black",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun GameInviteDialogPreview() {
-    CheRg42Theme {
-        GameInviteDialog(
-            username = "UserName",
-            onAccept = { /* Preview only, no action needed */ },
-            onDecline = { /* Preview only, no action needed */ }
-        )
-    }
-}
-
-/*
-@Preview(showBackground = true)
-@Composable
-fun LobbyScreenPreview() {
-    CheRg42Theme {
-        LobbyScreen(
-            username = "UserName",
-            players = listOf(
-                "Alice",
-                "Bob",
-                "Charlie",
-                "Alice"
-            ),
-            onInvite = { /* Preview only, no action needed */ },
-            onNavigateBack = { /* Preview only, no action needed */ }
-        )
-    }
-}
-*/
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

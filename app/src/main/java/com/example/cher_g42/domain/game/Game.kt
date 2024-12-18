@@ -11,85 +11,58 @@ data class Game(
     val currentPlayer: PieceColor
 ) {
 
+    fun play(position: Position): Game {
+        // Play the move and get the updated board
+        val newBoard = board.play(position, currentPlayer)
 
-    fun play(position: Position): Game { //como board e gamestate são atualizados ao mesmo tempo o gamestate pode não dizer imediatamente que o jogo que ele já terminou
+        // Check if the game is over with the updated board
+        val isGameOver = if (checkIfOver(newBoard)) {
+            val winner = winner()
+            if (winner != null) GameState.FINISHED else GameState.DRAW
+        } else {
+            GameState.ACTIVE
+        }
+
+        // Return a new game state with the updated board and state
         return this.copy(
-            board = board.play(position, currentPlayer),
-            state = if (checkWin()) {
-                if (board.score().first == board.score().second) GameState.DRAW else GameState.FINISHED
-            } else {GameState.ACTIVE}, //gamestate.finished não mosta quem é o vencedor
+            board = newBoard,
+            state = isGameOver,
             currentPlayer = currentPlayer.opposite()
         )
     }
 
-    private fun checkWin(): Boolean {
-        if (board.isBoardFull()) return true
-        if (board.checkAvailableMoves(currentPlayer) == emptyList<Position>()) return true
-        return false
+    fun pass(): Game {
+        return this.copy(
+            state = if (checkIfOver(board)) {
+                val winner = winner()
+                if (winner != null) GameState.FINISHED else GameState.DRAW
+            } else {
+                GameState.ACTIVE
+            },
+            currentPlayer = currentPlayer.opposite()
+        )
     }
-    override fun toString(): String {
-        var result = id.toString() + "\n"
-        stringOfNumbersInBoard(board.cells.size)
-        stringOfLettersInBoard(board.cells[0].size)
-        for (row in board.cells){
-            for(col in row){
-                result += when(col.color){
-                    PieceColor.BLACK -> "b"
-                    PieceColor.WHITE -> "w"
-                    else -> "+"
-                }
 
-            }
-            result += "\n"
+    fun winner(): PieceColor? {
+        val (blackScore, whiteScore) = board.score()
+        return when {
+            blackScore > whiteScore -> PieceColor.BLACK
+            whiteScore > blackScore -> PieceColor.WHITE
+            else -> null // It's a draw
         }
-        result += state.name +"\n"
-        result += currentPlayer.name
-        return result
+    }
+
+    private fun checkIfOver(newBoard: Board): Boolean {
+        if (newBoard.isBoardFull()) return true
+        val currentPlayerHasMoves = newBoard.checkAvailableMoves(currentPlayer).isNotEmpty()
+        val opponentHasMoves = newBoard.checkAvailableMoves(currentPlayer.opposite()).isNotEmpty()
+        return !currentPlayerHasMoves && !opponentHasMoves
     }
 
 }
 
-fun createGame(): Game{
-    val id = UUID.randomUUID()
+fun createGame(id: UUID): Game{
     val board = createBoard()
     return Game(id,board,GameState.ACTIVE,PieceColor.BLACK)
 
-}
-
-fun String.toGame():Game{
-    val gameList = this.split('\n')
-    val id: UUID = UUID.fromString(gameList[0]) //se gamelist[0], não for tipo uuid dá erro
-    val cells = emptyList<List<Cell>>().toMutableList()
-    for (r in 0 until gameList[1].length){
-        val rowString = gameList [1  + r]
-        val row = emptyList<Cell>().toMutableList()
-        for(c in 0 until rowString.length){
-            val cell = when(rowString[c] ){
-                'b'-> Cell(Position(c.toColumn(),Row(r)),PieceColor.BLACK)
-                'w'-> Cell(Position(c.toColumn(),Row(r)),PieceColor.WHITE)
-                else -> Cell(Position(c.toColumn(),Row(r)),null)
-            }
-            row.add(cell)
-        }
-        cells.add(row)
-    }
-    val state = GameState.valueOf(gameList[1 + gameList[1].length])
-    val currentPlayer = PieceColor.valueOf(gameList[1 + gameList[1].length + 1])
-    return Game(id,Board(cells),state,currentPlayer)
-}
-
-private fun stringOfNumbersInBoard(rowSize:Int):String{
-    var stringOfNumbers =""
-    for( i in 1 .. rowSize){
-        stringOfNumbers += i.toString()
-    }
-    return stringOfNumbers
-}
-
-private fun stringOfLettersInBoard(colSize:Int):String{
-    var stringOfLetters =""
-    for( i in 0 until  colSize){
-        stringOfLetters += ('A'.code + i).toChar()
-    }
-    return stringOfLetters
 }

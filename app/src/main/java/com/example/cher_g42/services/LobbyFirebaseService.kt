@@ -1,6 +1,7 @@
 package com.example.cher_g42.services
 
-import com.example.cher_g42.domain.game.LobbyService
+import com.example.cher_g42.domain.game.PieceColor
+import com.example.cher_g42.domain.matchmaking.LobbyService
 import com.example.cher_g42.domain.game.PlayerInfo
 import com.example.cher_g42.domain.player.UserInfo
 import com.google.firebase.firestore.FirebaseFirestore
@@ -14,10 +15,12 @@ private const val LOBBY = "lobby"
 private const val NAME = "name"
 private const val ID = "id"
 private const val INFO = "info"
+
 private const val CHALLENGE = "challenge"
 private const val CHALLENGER = "challenger"
 private const val CHALLENGED = "challenged"
 private const val CHALLENGESTATE = "state"
+private const val COLOR = "color"
 
 enum class ChallengeState {
     PENDING,
@@ -72,16 +75,19 @@ class LobbyFirebaseService(private val db: FirebaseFirestore) : LobbyService {
     }
 
     override suspend fun issueChallenge(challenger: PlayerInfo, challenged: PlayerInfo): String {
-        val ref = db.collection(CHALLENGE)
-            .add(
+        val uuid = UUID.randomUUID().toString()
+        db.collection(CHALLENGE)
+            .document(uuid)
+            .set(
                 hashMapOf(
                     CHALLENGER to challenger.toMap(),
                     CHALLENGED to challenged.toMap(),
-                    CHALLENGESTATE to ChallengeState.PENDING
+                    CHALLENGESTATE to ChallengeState.PENDING,
+                    COLOR to PieceColor.EMPTY.name
                 )
             )
             .await()
-        return ref.id
+        return uuid
     }
 
     // A function that listens to the challenges to see if someone has challenged the player
@@ -139,6 +145,31 @@ class LobbyFirebaseService(private val db: FirebaseFirestore) : LobbyService {
         db.collection(CHALLENGE)
             .document(challengeId)
             .delete()
+    }
+
+    override fun updatePieceColor(challengeId: String, color: PieceColor) {
+        db.collection(CHALLENGE)
+            .document(challengeId)
+            .update(COLOR, color.name)
+    }
+
+    override fun listenToColorChange(challengeId: String, onColorChange: (PieceColor) -> Unit) {
+        db.collection(CHALLENGE)
+            .document(challengeId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    // Handle error
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    // Get the current state from the Firestore document
+                    val colorString = snapshot.getString(COLOR)
+                    val color = PieceColor.valueOf(colorString!!)
+                    if (color != PieceColor.EMPTY) {
+                        onColorChange(color) // Notify about state change
+                    }
+                }
+            }
     }
 
     private fun PlayerInfo.toMap(): Map<String, Any> {

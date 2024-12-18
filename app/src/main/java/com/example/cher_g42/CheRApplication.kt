@@ -4,8 +4,10 @@ import android.app.Application
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.cher_g42.domain.game.LobbyService
+import com.example.cher_g42.domain.game.GameService
+import com.example.cher_g42.domain.matchmaking.LobbyService
 import com.example.cher_g42.domain.player.UserInfoRepository
+import com.example.cher_g42.services.GameFirebaseService
 import com.example.cher_g42.services.LobbyFirebaseService
 import com.example.cher_g42.services.UserInfoDataStore
 import com.google.firebase.Firebase
@@ -20,6 +22,7 @@ const val TAG = "CheRApp"
 interface DependenciesContainer {
     val userInfoRepository: UserInfoRepository
     val lobby: LobbyService
+    val game: GameService
 }
 
 /**
@@ -34,6 +37,9 @@ class CheRApplication : Application(), DependenciesContainer {
 
     override val lobby: LobbyService
         get() = LobbyFirebaseService(realDb)
+
+    override val game: GameService
+        get() = GameFirebaseService(realDb)
 
     private val realDb: FirebaseFirestore by lazy {
         Firebase.firestore

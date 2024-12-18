@@ -28,6 +28,7 @@
         <activity android:name=".ui.home.AboutActivity" />
         <activity android:name=".ui.favorites.FavoritesActivity" />
         <activity android:name=".ui.matchmaking.MatchmakingActivity" />
+        <activity android:name=".ui.game.GameActivity" />
     </application>
 
 </manifest>
