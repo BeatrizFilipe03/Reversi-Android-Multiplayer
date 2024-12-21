@@ -41,7 +41,6 @@ class LobbyFirebaseService(private val db: FirebaseFirestore) : LobbyService {
                     return@addSnapshotListener
                 }
                 if (snapshot != null && !snapshot.isEmpty) {
-                    // should see the id of the documents (these are the id of players) and return the PlayerInfo
                     val players = snapshot.documents
                         .filter { it.id != currUser.id.toString() } // Exclude currUser
                         .map { it.id to it.data }

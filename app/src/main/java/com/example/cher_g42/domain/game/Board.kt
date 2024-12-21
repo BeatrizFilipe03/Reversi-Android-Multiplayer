@@ -85,11 +85,11 @@ data class Board(val cells: List<List<Cell>>) {
            // Find opponent pieces to potentially flip
            while (isValidColumn(currentX, BOARD_SIZE) && isValidRow(currentY, BOARD_SIZE)) {
                val currentCell = cells[currentY - 1][currentX - 1]
-               when {
-                   currentCell.color == color.opposite() -> {
+               when (currentCell.color) {
+                   color.opposite() -> {
                        capturedPositions.add(Pair(currentX, currentY))
                    }
-                   currentCell.color == color -> {
+                   color -> {
                        // If we hit our color and captured pieces exist, flip them
                        if (capturedPositions.isNotEmpty()) {
                            for ((flipX, flipY) in capturedPositions) {
@@ -182,4 +182,12 @@ fun createBoard():Board{
     }
 
     return Board(cells)
+}
+
+fun checkIfOver(newBoard: Board): Boolean {
+    val currentPlayer = PieceColor.BLACK
+    if (newBoard.isBoardFull()) return true
+    val player1HasMoves = newBoard.checkAvailableMoves(currentPlayer).isNotEmpty()
+    val player2HasMoves = newBoard.checkAvailableMoves(currentPlayer.opposite()).isNotEmpty()
+    return !player1HasMoves && !player2HasMoves
 }

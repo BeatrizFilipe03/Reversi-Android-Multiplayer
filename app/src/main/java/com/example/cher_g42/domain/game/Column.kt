@@ -8,7 +8,13 @@ data class Column(val value: Char) {
         return value.code - 'A'.code + 1
     }
 }
+
 fun Int.toColumn(): Column {
     require(this in 1..8) { "Invalid column value" }
     return Column('A' + this - 1)
+}
+
+fun String.toColumn(): Column {
+    require(length == 1) { "Invalid column value" }
+    return Column(first())
 }

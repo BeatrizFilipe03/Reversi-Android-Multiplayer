@@ -18,6 +18,7 @@ private const val BOARD = "board"
 private const val ID = "id"
 private const val STATE = "state"
 private const val CURRENT_PLAYER = "currentPlayer"
+private const val LAST_MOVE = "lastMove"
 
 /**
  * Implementation of the Game's service using Firebase's Firestore.
@@ -46,7 +47,6 @@ class GameFirebaseService(private val db: FirebaseFirestore) : GameService {
                     return@addSnapshotListener
                 }
                 if (snapshot != null && snapshot.exists()) {
-                    // Get game as string an then convert it to Game
                     val game = snapshot.data?.toGame()
                     if (game != null) {
                         onGameUpdate(game)
@@ -70,12 +70,19 @@ class GameFirebaseService(private val db: FirebaseFirestore) : GameService {
         updateGame(newGame)
     }
 
+    override fun deleteGame(gameId: UUID) {
+        db.collection(GAME)
+            .document(gameId.toString())
+            .delete()
+    }
+
     private fun Game.toMap(): Map<String, Any> {
         return mapOf(
             ID to id.toString(),
             BOARD to board.toString(),
             STATE to state.name,
-            CURRENT_PLAYER to currentPlayer.name
+            CURRENT_PLAYER to currentPlayer.name,
+            LAST_MOVE to (lastMove?.toString() ?: "null")
         )
     }
 
@@ -84,7 +91,8 @@ class GameFirebaseService(private val db: FirebaseFirestore) : GameService {
             UUID.fromString(this[ID] as String),
             Board.fromString(this[BOARD] as String),
             GameState.valueOf(this[STATE] as String),
-            PieceColor.valueOf(this[CURRENT_PLAYER] as String)
+            PieceColor.valueOf(this[CURRENT_PLAYER] as String),
+            (this[LAST_MOVE] as String).let { if (it == "null") null else Position.fromString(it) }
         )
     }
 }

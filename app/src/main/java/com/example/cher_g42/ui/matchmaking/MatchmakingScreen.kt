@@ -20,8 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,13 +43,19 @@ import androidx.compose.ui.res.painterResource
 import com.example.cher_g42.R
 import com.example.cher_g42.domain.game.PieceColor
 import com.example.cher_g42.domain.game.PlayerInfo
+import com.example.cher_g42.domain.player.UserInfo
+import com.example.cher_g42.ui.common.ListItem
+import com.example.cher_g42.ui.common.LoadingScreen
 import java.util.UUID
 
 @Composable
-fun MatchmakingScreen(viewModel: MatchmakingViewModel, onNavigateBack: () -> Unit = {}, onNavigateToGame: (String, PieceColor, UUID, String) -> Unit) {
+fun MatchmakingScreen(viewModel: MatchmakingViewModel, onNavigateBack: () -> Unit = {}, onNavigateToGame: (String, PieceColor, String) -> Unit) {
     val state by viewModel.state.collectAsState()
 
     when (state) {
+        is MatchmakingState.Loading -> {
+            LoadingScreen()
+        }
         is MatchmakingState.NotInLobby -> EnterNameDialog(
             onNameEntered = { name ->
                 viewModel.enterLobby(name)
@@ -71,15 +75,15 @@ fun MatchmakingScreen(viewModel: MatchmakingViewModel, onNavigateBack: () -> Uni
             val challenger = stateChallenge.challenger
             val challenged = stateChallenge.challenged
             val challengeId = stateChallenge.id
+            val challengerName = challenger.info.name
 
             if (viewModel.currUser == challenger) {
-                // Make view to show that the challenge is pending
                 Text("Waiting for ${challenged.info.name} to accept the challenge")
             } else {
                 GameInviteDialog(
-                    username = challenger.info.name,
+                    username = challengerName,
                     onAccept = {
-                        viewModel.acceptChallenge(challengeId)
+                        viewModel.acceptChallenge(challengeId, challengerName)
                     },
                     onDecline = {
                         viewModel.rejectChallenge(challengeId)
@@ -90,8 +94,9 @@ fun MatchmakingScreen(viewModel: MatchmakingViewModel, onNavigateBack: () -> Uni
         is MatchmakingState.InChooseColor -> {
             val stateChooseColor = state as MatchmakingState.InChooseColor
             val challengeId = stateChooseColor.challenge
+            val opponentName = stateChooseColor.opponentName
             ChoosePieceDialog { pieceColor ->
-                viewModel.choosePieceColor(challengeId, pieceColor)
+                viewModel.choosePieceColor(challengeId, pieceColor, opponentName)
             }
         }
         is MatchmakingState.InGame -> {
@@ -99,9 +104,8 @@ fun MatchmakingScreen(viewModel: MatchmakingViewModel, onNavigateBack: () -> Uni
             val stateChallenge = state as MatchmakingState.InGame
             val challengeId = stateChallenge.challengeId
             val pieceColor = stateChallenge.color
-            val playerId = stateChallenge.playerId
-            val playerName = stateChallenge.playerName
-            onNavigateToGame(challengeId, pieceColor, playerId, playerName)
+            val opponentName = stateChallenge.opponentName
+            onNavigateToGame(challengeId, pieceColor, opponentName)
         }
     }
 }
@@ -157,7 +161,6 @@ fun EnterNameDialog(
                     modifier = Modifier.padding(top = 12.dp, bottom = 5.dp)
                 )
 
-                // "Accept?" message
                 Text(
                     text = "(max 30 characters)",
                     style = MaterialTheme.typography.labelSmall,
@@ -321,7 +324,9 @@ fun LobbyScreen(
                         MaterialTheme.colorScheme.secondary
                     }
 
-                    PlayerListItem(playerName = player.info.name, onInvite = { onInvite(player) }, cardColor = cardColor)
+                    ListItem(name = player.info.name, cardColor = cardColor) {
+                        Invite(player.info.name, onInvite = { onInvite(player) })
+                    }
                 }
             }
 
@@ -342,36 +347,15 @@ fun LobbyScreen(
 }
 
 @Composable
-fun PlayerListItem(playerName: String, onInvite: (String) -> Unit, cardColor: Color) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 18.dp),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(cardColor)
+fun Invite(playerName: String, onInvite: (String) -> Unit) {
+    IconButton(
+        onClick = { onInvite(playerName) },
+        modifier = Modifier.padding(horizontal = 5.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 5.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = playerName,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f).padding(horizontal = 5.dp)
-            )
-
-            IconButton(
-                onClick = { onInvite(playerName) },
-                modifier = Modifier.padding(horizontal = 5.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.controller_filled),
-                    contentDescription = "Invite to Play"
-                )
-            }
-        }
+        Icon(
+            painter = painterResource(id = R.drawable.controller_filled),
+            contentDescription = "Invite to Play"
+        )
     }
 }
 
@@ -468,8 +452,15 @@ fun ChoosePieceDialog(
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun MatchmakingScreenPreview() {
+fun LobbyScreenPreview() {
     CheRg42Theme {
-        //MatchmakingScreen()
+        LobbyScreen(
+            username = "Player 1",
+            players = listOf(
+                PlayerInfo(UserInfo("Player 2"), UUID.randomUUID()),
+                PlayerInfo(UserInfo("Player 3"), UUID.randomUUID())
+            ),
+            onInvite = { }
+        )
     }
 }

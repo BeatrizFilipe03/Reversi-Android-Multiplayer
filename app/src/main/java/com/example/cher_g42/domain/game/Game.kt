@@ -8,7 +8,8 @@ data class Game(
     val id: UUID,
     val board: Board,
     val state: GameState,
-    val currentPlayer: PieceColor
+    val currentPlayer: PieceColor,
+    val lastMove : Position? = Position(Column('D'),Row(4)),
 ) {
 
     fun play(position: Position): Game {
@@ -27,7 +28,8 @@ data class Game(
         return this.copy(
             board = newBoard,
             state = isGameOver,
-            currentPlayer = currentPlayer.opposite()
+            currentPlayer = currentPlayer.opposite(),
+            lastMove = position
         )
     }
 
@@ -39,7 +41,8 @@ data class Game(
             } else {
                 GameState.ACTIVE
             },
-            currentPlayer = currentPlayer.opposite()
+            currentPlayer = currentPlayer.opposite(),
+            lastMove = null
         )
     }
 
@@ -50,13 +53,6 @@ data class Game(
             whiteScore > blackScore -> PieceColor.WHITE
             else -> null // It's a draw
         }
-    }
-
-    private fun checkIfOver(newBoard: Board): Boolean {
-        if (newBoard.isBoardFull()) return true
-        val currentPlayerHasMoves = newBoard.checkAvailableMoves(currentPlayer).isNotEmpty()
-        val opponentHasMoves = newBoard.checkAvailableMoves(currentPlayer.opposite()).isNotEmpty()
-        return !currentPlayerHasMoves && !opponentHasMoves
     }
 
 }

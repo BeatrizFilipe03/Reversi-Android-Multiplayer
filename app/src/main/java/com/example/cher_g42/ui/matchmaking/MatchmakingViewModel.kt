@@ -11,14 +11,14 @@ import com.example.cher_g42.services.ChallengeState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 sealed class MatchmakingState {
-    object NotInLobby : MatchmakingState()
-    object InLobby : MatchmakingState()
+    data object Loading : MatchmakingState()
+    data object NotInLobby : MatchmakingState()
+    data object InLobby : MatchmakingState()
     data class InChallenge(val challenger: PlayerInfo, val challenged: PlayerInfo, val id: String) : MatchmakingState()
-    data class InChooseColor(val challenge: String) : MatchmakingState()
-    data class InGame(val challengeId: String, val color: PieceColor, val playerId: UUID, val playerName: String) : MatchmakingState()
+    data class InChooseColor(val challenge: String, val opponentName: String) : MatchmakingState()
+    data class InGame(val challengeId: String, val color: PieceColor, val opponentName: String) : MatchmakingState()
 }
 
 class MatchmakingViewModel(
@@ -46,7 +46,7 @@ class MatchmakingViewModel(
                     }
                     is MatchmakingState.InChooseColor -> {
                         val challengeId = state.challenge
-                        listenToColorChange(challengeId)
+                        listenToColorChange(challengeId, state.opponentName)
                     }
                     else -> {
                         // Optional: handle other state transitions
@@ -58,6 +58,7 @@ class MatchmakingViewModel(
 
     fun enterLobby(name : String) {
         check(currUser == null && _state.value is MatchmakingState.NotInLobby) { "The player is already inside the lobby" }
+        _state.value = MatchmakingState.Loading
         viewModelScope.launch {
                 val playerInfo = PlayerInfo(UserInfo(name))
                 currUser = playerInfo
@@ -76,8 +77,11 @@ class MatchmakingViewModel(
     }
 
     private fun getPlayers() {
-        service.getPlayers(currUser!!) { players ->
-            _players.value = players
+        viewModelScope.launch {
+            service.getPlayers(currUser!!) { players ->
+                _players.value = players
+            }
+            _state.value = MatchmakingState.InLobby
         }
     }
 
@@ -94,7 +98,7 @@ class MatchmakingViewModel(
 
                 service.listenToChallengeState(challengeId) { state ->
                     if (state == ChallengeState.ACCEPTED) {
-                        _state.value = MatchmakingState.InChooseColor(challengeId)
+                        _state.value = MatchmakingState.InChooseColor(challengeId, challenged.info.name)
                         service.deleteChallenge(challengeId)
                     } else if (state == ChallengeState.REJECTED) {
                         _state.value = MatchmakingState.InLobby
@@ -117,11 +121,11 @@ class MatchmakingViewModel(
             }
     }
 
-    fun acceptChallenge(challengeId: String) {
+    fun acceptChallenge(challengeId: String, opponentName: String) {
         check(currUser != null && _state.value is MatchmakingState.InChallenge) { "The player is not in a challenge" }
         viewModelScope.launch {
             service.acceptChallenge(challengeId)
-            _state.value = MatchmakingState.InChooseColor(challengeId)
+            _state.value = MatchmakingState.InChooseColor(challengeId, opponentName)
         }
     }
 
@@ -133,19 +137,18 @@ class MatchmakingViewModel(
         }
     }
 
-    fun choosePieceColor(challengeId: String, color: PieceColor) {
+    fun choosePieceColor(challengeId: String, color: PieceColor, opponentName: String) {
         check(currUser != null ) { "The player is not in a color choosing state" }
         viewModelScope.launch {
-            _state.value = MatchmakingState.InGame(challengeId, color, currUser!!.id, currUser!!.info.name)
+            _state.value = MatchmakingState.InGame(challengeId, color, opponentName)
             service.updatePieceColor(challengeId, color)
         }
     }
 
-    private fun listenToColorChange(challengeId: String) {
-        // needs to be opposite color
+    private fun listenToColorChange(challengeId: String, opponentName: String) {
         service.listenToColorChange(challengeId) { color ->
             val oppositeColor = color.opposite()
-            _state.value = MatchmakingState.InGame(challengeId, oppositeColor, currUser!!.id, currUser!!.info.name)
+            _state.value = MatchmakingState.InGame(challengeId, oppositeColor, opponentName)
         }
     }
 

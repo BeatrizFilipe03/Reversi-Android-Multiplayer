@@ -11,7 +11,6 @@ import com.example.cher_g42.domain.game.PieceColor
 import com.example.cher_g42.ui.TAG
 import com.example.cher_g42.ui.game.GameActivity
 import com.example.cher_g42.ui.theme.CheRg42Theme
-import java.util.UUID
 
 class MatchmakingActivity : ComponentActivity() {
     private val navigation by lazy { Navigation(this) }
@@ -34,8 +33,8 @@ class MatchmakingActivity : ComponentActivity() {
                 MatchmakingScreen(
                     viewModel,
                     onNavigateBack = { finish() },
-                    onNavigateToGame = { challenge, color, playerId, playerName ->
-                        navigation.navigateToGame(challenge, color, playerId, playerName)
+                    onNavigateToGame = { challenge, color, opponentName ->
+                        navigation.navigateToGame(challenge, color, opponentName)
                         finish()
                     }
                 )
@@ -61,12 +60,11 @@ class MatchmakingActivity : ComponentActivity() {
 }
 
 class Navigation(private val activity: ComponentActivity) {
-    fun navigateToGame(challenge: String, color: PieceColor, playerId: UUID, playerName: String) {
+    fun navigateToGame(challenge: String, color: PieceColor, opponentName: String) {
         val intent = Intent(activity, GameActivity::class.java).apply {
             putExtra("challenge", challenge)
             putExtra("colorChosen", color.name)
-            putExtra("playerId", playerId.toString())
-            putExtra("playerName", playerName)
+            putExtra("opponentName", opponentName)
         }
         activity.startActivity(intent)
     }

@@ -8,4 +8,5 @@ interface GameService {
     fun listenToGame(gameId: String, onGameUpdate: (Game) -> Unit)
     fun playMove(game: Game, position: Position)
     fun pass(game: Game)
+    fun deleteGame(gameId: UUID)
 }
